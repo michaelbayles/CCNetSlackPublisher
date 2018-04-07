@@ -22,23 +22,21 @@ namespace ThoughtWorks.CruiseControl.Core.Publishers
 
         private string FormatText(IIntegrationResult result)
         {
-            string message = $"{ result.ProjectUrl}|{result.ProjectName} {result.Label} {result.Status}";
+            string message = $"<{result.ProjectUrl}|{result.ProjectName}> {result.Label} {result.Status} ";
             message += result.Succeeded ? ":heavy_check_mark:" : ":interrobang:";
             if (!result.Succeeded)
             {
-                message += GetBreakers(result);
-                message += $"\nException:{result.ExceptionResult}";
+                message += GetBreakers(result.Modifications);
             }
 
             return message;
         }
 
-        private string GetBreakers(IIntegrationResult result)
+        private string GetBreakers(Modification[] modifications)
         {
-            if (result.FailureUsers == null || result.FailureUsers.Count == 0) return "";
+            if (modifications == null || modifications.Length == 0) return "";
 
-            var uniqueFailingUsers = result.FailureUsers.Cast<string>().Distinct();
-            return "\nBreakers:\n" + string.Join("\n", uniqueFailingUsers.Select(user => $"<@{user}>").ToArray());
+            return "\nBreaking Modifications:\n" + string.Join("\n", modifications.Select(m => $"<@{m.UserName}> - {m.Comment}").ToArray());
         }
     }
 }
